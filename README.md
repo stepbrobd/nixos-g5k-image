@@ -1,5 +1,5 @@
 
-# nixos-g5k-imag - generate NixOS image for Grid'5000 (WIP)
+# nixos-g5k-image - generate NixOS image for Grid'5000 (WIP)
 
 **This project is under development/refactoring (contact developer if you want to use it)**
 
