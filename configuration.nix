@@ -1,8 +1,40 @@
 { pkgs, ... }:
+let
+  user = import ./user.nix;
+in
 {
-  # add vim editor
-  environment.systemPackages = with pkgs; [ vim ];
+  environment.systemPackages = with pkgs; [
+    vim
+    just
+    jq
+    nushell
+    tmux
+  ];
 
-  users.users.root.password = "nixos";
-  # note: ssh server is enable  and firewall is disable
+  virtualisation = {
+    docker = {
+      enable = true;
+    };
+  };
+  fileSystems = {
+    "/home/${user.name}" = {
+      device = "nfs:/export/home/${user.name}";
+      fsType = "nfs";
+    };
+  };
+
+  nix.settings.trusted-users = [ user.name ];
+  users.groups.g5k-users.gid = 8000;
+  users.users."${user.name}" = {
+    isNormalUser = true;
+    uid = user.uid;
+    group = "g5k-users";
+    extraGroups = [
+      "wheel"
+      "adm"
+      "dialout"
+      "docker"
+    ];
+    openssh.authorizedKeys.keys = [ user.id_rsa_pub ];
+  };
 }
