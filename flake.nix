@@ -18,8 +18,6 @@
     }:
     let
       system = "x86_64-linux";
-      #nixpkgs.overlays = [ (_: _: kapack.packages.${system}) ];
-      #pkgs = nixpkgs.legacyPackages.${system};
       pkgs = import nixpkgs {
         inherit system;
         overlays = [ (_: _: kapack.packages.${system}) ];
