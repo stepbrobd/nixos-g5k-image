@@ -1,53 +1,49 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
 let
-  image_name = if (builtins.getEnv ("KAENV_NAME") != "") then
-    builtins.getEnv ("KAENV_NAME")
-  else
-    "nixos-${pkgs.stdenv.hostPlatform.system}";
+  image_name = "nixos-${pkgs.stdenv.hostPlatform.system}";
 
-  author = if (builtins.getEnv ("AUTHOR") != "") then
-    builtins.getEnv ("AUTHOR")
-  else
-    builtins.getEnv ("USER");
+  author = "";
 
-  file_image_baseurl = if (builtins.getEnv ("FILE_IMAGE_BASEURL") != "") then
-    builtins.getEnv ("FILE_IMAGE_BASEURL")
-  else
-    "file:~";
+  file_image_baseurl = "g5k-image-all";
 
-  postinstall = if (builtins.getEnv ("POST_INSTALL") != "") then
-    builtins.getEnv ("POST_INSTALL")
-  else
-    #"server:///grid5000/postinstalls/g5k-postinstall.tgz";
-    "http://public.grenoble.grid5000.fr/~orichard/postinstalls/g5k-postinstall";
+  postinstall = "http://public.grenoble.grid5000.fr/~orichard/postinstalls/g5k-postinstall";
+  #"server:///grid5000/postinstalls/g5k-postinstall.tgz";
 
-  postinstall_args = if (builtins.getEnv ("POST_INSTALL") != "") then
-    builtins.getEnv ("POST_INSTALL_ARGS")
-  else
-    "g5k-postinstall --net none --bootloader no-grub-from-deployed-env";
+  postinstall_args = "g5k-postinstall --net none --bootloader no-grub-from-deployed-env";
 
-in {
+in
+{
   imports = [
     # Profiles of this basic installation.
-    <nixpkgs/nixos/modules/profiles/all-hardware.nix>
-    <nixpkgs/nixos/modules/profiles/base.nix>
-    <nixpkgs/nixos/modules/profiles/installation-device.nix>
-    <nixpkgs/nixos/modules/installer/scan/not-detected.nix>
+    "${modulesPath}/profiles/all-hardware.nix"
+    "${modulesPath}/profiles/base.nix"
+    "${modulesPath}/profiles/installation-device.nix"
+    "${modulesPath}/installer/scan/not-detected.nix"
   ];
 
   # base configuration
   services.sshd.enable = true;
   networking.firewall.enable = false;
-  services.openssh.permitRootLogin = lib.mkDefault "yes";
+
+  services.openssh.settings.PermitRootLogin = lib.mkDefault "yes";
   services.getty.autologinUser = lib.mkDefault "root";
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
   boot.loader.grub.device = "/dev/root";
-  
-  boot.initrd.availableKernelModules =
-    [ "ahci" "ehci_pci" "megaraid_sas" "sd_mod" ];
+
+  boot.initrd.availableKernelModules = [
+    "ahci"
+    "ehci_pci"
+    "megaraid_sas"
+    "sd_mod"
+  ];
   boot.kernelModules = [ "kvm-intel" ];
 
   fileSystems."/" = {
@@ -59,54 +55,45 @@ in {
 
   swapDevices = [ ];
 
-  nix.maxJobs = lib.mkDefault 32;
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-
-  system.build.g5k-image =
-    import "${toString modulesPath}/../lib/make-system-tarball.nix" {
-      fileName = image_name;
-      stdenv = pkgs.stdenv;
-      closureInfo = pkgs.closureInfo;
-      pixz = pkgs.pixz;
-      extraCommands = "mkdir -p etc/ssh root tmp var/log";
-      storeContents = [{
+  system.build.g5k-image = import "${toString modulesPath}/../lib/make-system-tarball.nix" {
+    fileName = image_name;
+    stdenv = pkgs.stdenv;
+    closureInfo = pkgs.closureInfo;
+    pixz = pkgs.pixz;
+    extraCommands = "mkdir -p etc/ssh root tmp var/log";
+    storeContents = [
+      {
         object = config.system.build.toplevel;
         symlink = "/run/current-system";
-      }];
+      }
+    ];
 
-      contents = [
-        {
-          source = config.system.build.initialRamdisk + "/"
-            + config.system.boot.loader.initrdFile;
-          target = "/boot/" + config.system.boot.loader.initrdFile;
-        }
-        {
-          source = config.boot.kernelPackages.kernel + "/"
-            + config.system.boot.loader.kernelFile;
-          target = "/boot/" + config.system.boot.loader.kernelFile;
-        }
-        {
-          source = "${
-              builtins.unsafeDiscardStringContext config.system.build.toplevel
-            }/init";
-          target = "/boot/init";
-        }
-      ];
+    contents = [
+      {
+        source = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
+        target = "/boot/" + config.system.boot.loader.initrdFile;
+      }
+      {
+        source = config.boot.kernelPackages.kernel + "/" + config.system.boot.loader.kernelFile;
+        target = "/boot/" + config.system.boot.loader.kernelFile;
+      }
+      {
+        source = "${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init";
+        target = "/boot/init";
+      }
+    ];
 
-    };
+  };
 
-  system.build.g5k-image-info = pkgs.writeText "g5k-image-info.json"
-    (builtins.toJSON {
-      kernel = config.boot.kernelPackages.kernel + "/"
-        + config.system.boot.loader.kernelFile;
-      initrd = config.system.build.initialRamdisk + "/"
-        + config.system.boot.loader.initrdFile;
-      init = "${
-          builtins.unsafeDiscardStringContext config.system.build.toplevel
-        }/init";
+  system.build.g5k-image-info = pkgs.writeText "g5k-image-info.json" (
+    builtins.toJSON {
+      kernel = config.boot.kernelPackages.kernel + "/" + config.system.boot.loader.kernelFile;
+      initrd = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
+      init = "${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init";
       image = "${config.system.build.g5k-image}/tarball/${image_name}.tar.xz";
       kaenv = config.system.build.kadeploy_env_description;
-    });
+    }
+  );
 
   system.build.g5k-image-all = pkgs.stdenv.mkDerivation {
     name = "g5k-image-all";
@@ -140,11 +127,12 @@ in {
     text = ''
       name: ${image_name}
       version: 1
-      description: NixOS 
+      description: NixOS
       author: ${author}
       visibility: shared
       destructive: false
       os: linux
+      arch: x86_64
       image:
         file: ${file_image_baseurl}/${image_name}.tar.xz
         kind: tar
@@ -154,7 +142,7 @@ in {
         compression: gzip
         script:  ${postinstall_args}
       boot:
-        kernel: /boot/bzImage 
+        kernel: /boot/bzImage
         initrd: /boot/initrd
         kernel_params: init=boot/init console=tty0 console=ttyS0,115200
       filesystem: ext4
