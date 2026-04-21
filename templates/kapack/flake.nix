@@ -7,26 +7,30 @@
       url = "github:oar-team/nixos-g5k-image";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    kapack.url = "gitlab:kairns/kapack?host=gricad-gitlab.univ-grenoble-alpes.fr";
+    kapack.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
     { self
     , nixpkgs
     , nixos-g5k-image
+    , kapack
     , ...
     }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
+        overlays = [ (_: _: kapack.packages.${system}) ];
       };
       lib = pkgs.lib;
 
       nixosConfig = nixpkgs.lib.nixosSystem {
-        inherit system;
-
+        inherit system pkgs;
         modules = [
           nixos-g5k-image.nixosModules.g5k-image
+          kapack.nixosModules.my-startup
           (import ./configuration.nix)
         ];
       };

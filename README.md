@@ -1,16 +1,17 @@
-# nixos-g5k-image templates to generate NixOS image for Grid'5000 (WIP)
+# nixos-g5k-image templates to generate NixOS images for Grid'5000 (WIP)
 
-**This project is under development/refactoring (contact developer if you want to use it)**
+**This project is under development/refactoring (contact the developer if you want to use it)**
 
-This project helps to generate  [NixOS](https://nixos.org) system images deployable on [Grid'5000](https://www.grid5000.fr) testbed platform. These images are also known as environment in [Kameleon](https://github.com/oar-team/kameleon) terminology.
+This project helps generate [NixOS](https://nixos.org) system images deployable on the [Grid'5000](https://www.grid5000.fr) testbed platform. These images are also known as *environments* in [Kameleon](https://github.com/oar-team/kameleon) terminology.
 
 # Template installation
-**Important:** Images are provided as nix flake template, but to date (26Q1) nix is not natively installed on Grid'5000 and nix user installation as some limitation which restrict to direct approach in Grid'5000. 
-Two approach:
+**Important:** Images are provided as Nix flake templates, but as of 2026 Q1, Nix is not natively installed on Grid'5000. User-level Nix installation has some limitations, which restrict direct usage of Nix template initialization on Grid'5000.
+
+Two approaches are possible to use template:
 
 1. Use an external machine with native Nix (e.g. your laptop) to get template then copy it on Grid'5000
 ```console
-# Get template on exeternal machine 
+# Get template on external machine 
 mkdir project && cd project
 nix flake init --template "github.com:oar-team/nixos-g5k-image#user"
 cd ..
@@ -18,24 +19,21 @@ cd ..
 scp -a project grenoble.g5k:
 ```
 
-2. Clone this repository in Grid'5000 then copy the selected template
+2. (**Preferred**) Clone this repository in Grid'5000 then copy the selected template:
 
 ```console
-# Get template on exeternal machine 
+# On Grid'5000
+git clone git@github.com:oar-team/nixos-g5k-image.git
 mkdir project && cd project
-nix flake init --template "github.com:oar-team/nixos-g5k-image#user"
-cd ..
-# Copy to testbed, command may differ following your ssh config
-scp -a project grenoble.g5k:
+cp -a ../nixos-g5k-image/user"
+git init .
+git add *
 ```
 
-We choose **user template** which allows to produce images  
-
-```console
-# On laptop 
-mkdir project && cd project
-nix flake init --template "github.com:oar-team/nixos-g5k-image#user"
-```
+## Available templates (image recipes)
+- *minimal*: only root user, kadeploy will user's internal SSH public key  
+- *user*: after minimal adjusments, user's Grid'5000 account is added with $HOME access 
+- *kapack*: example with kapack packages and modules added with an overlay
 
 ## By using nix-datamove machine as remote builder (⚠️Experimental⚠️)
 
@@ -69,7 +67,7 @@ oarsub -I
 setup-remote-nix.sh
 # go to directory
 cd nixos-g5k-image
-# update user.nix with user info (only for user and ka deploy)
+# update user.nix with user info (only for user and kapack templates)
 just generate-user-nix # or just u
 # build image
 just build # or just b
@@ -88,7 +86,3 @@ ssh ssh $(head -n 1 $OAR_NODEFILE)
 # Becareful check you $PATH it's mixed with /home/$USER/.bashrc 
 echo $PATH
 ````
-
-NOTE: In the flake.nix kapack is added as overlay, to use its packages to be
-accessible who also need to list then in flake.nix (see
-environment.systemPackages), and not in configuration.nix .

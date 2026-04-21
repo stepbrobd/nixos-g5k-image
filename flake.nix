@@ -6,11 +6,10 @@
     kapack.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =
-    {
-      self,
-      nixpkgs,
-      kapack,
-      ...
+    { self
+    , nixpkgs
+    , kapack
+    , ...
     }:
     let
       system = "x86_64-linux";

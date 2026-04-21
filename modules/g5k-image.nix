@@ -1,9 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  modulesPath,
-  ...
+{ config
+, lib
+, pkgs
+, modulesPath
+, ...
 }:
 let
   image_name = "nixos-${pkgs.stdenv.hostPlatform.system}";
@@ -37,6 +36,9 @@ in
 
     services.openssh.settings.PermitRootLogin = lib.mkDefault "yes";
     services.getty.autologinUser = lib.mkDefault "root";
+
+    # Disable systemd for stage 1
+    boot.initrd.systemd.enable = false;
 
     # Use the GRUB 2 boot loader.
     boot.loader.grub.enable = true;
