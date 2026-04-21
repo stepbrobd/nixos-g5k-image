@@ -1,20 +1,15 @@
 {
-  description = "nixos-g5k-image generator";
+  description = "NixOS G5K Images";
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.11";
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixpkgs.url = "nixpkgs/nixos-unstable";
     kapack.url = "gitlab:kairns/kapack?host=gricad-gitlab.univ-grenoble-alpes.fr";
     kapack.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =
-    {
-      nixpkgs,
-      kapack,
-      nixos-generators,
-      ...
+    { self
+    , nixpkgs
+    , kapack
+    , ...
     }:
     let
       system = "x86_64-linux";
@@ -22,33 +17,35 @@
         inherit system;
         overlays = [ (_: _: kapack.packages.${system}) ];
       };
+      lib = pkgs.lib;
     in
     {
-      packages.x86_64-linux = {
-        kexec = nixos-generators.nixosGenerate {
-          system = "x86_64-linux";
-          modules = [
-            ./configuration.nix
-          ];
-          format = "kexec";
-        };
-        g5k-image = nixos-generators.nixosGenerate {
-          system = "x86_64-linux";
-          modules = [
-            # UGLY: TODO: Remove use of nixos-generators
-            (
-              { ... }:
-              {
-                environment.systemPackages = [ pkgs.nxc ];
-              }
-            )
-            ./configuration.nix
-          ];
-          customFormats = {
-            "g5k-image" = ./format/g5k-image.nix;
-          };
-          format = "g5k-image";
-        };
+      nixosModules = {
+        g5k-image = import ./modules/g5k-image.nix;
       };
+
+      templates = {
+        minimal = {
+          description = "Minimal Nixos Grid'5000 image, tarball file with enviroment description";
+          path = ./templates/minimal;
+        };
+        user = {
+          description = "Nixos Grid'5000 image with user support and helper (ssh, nfs home)";
+          path = ./templates/user;
+        };
+        kapack = {
+          description = "Nixos Grid'5000 image, based on user version with addition of kapack's pkgs and modules";
+          path = ./templates/kapack;
+        };
+        defaultTemplate = self.templates.user;
+      };
+
+      formatter.${system} = pkgs.writeShellScriptBin "formatter" ''
+        set -eoux pipefail
+        shopt -s globstar
+        ${lib.getExe pkgs.deno} fmt README.md
+        ${lib.getExe pkgs.nixpkgs-fmt} .
+        ${lib.getExe pkgs.just} --fmt --unstable
+      '';
     };
 }

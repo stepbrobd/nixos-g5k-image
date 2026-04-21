@@ -1,5 +1,0 @@
-{
-    name = "auguste";
-    ui = 1000;
-    id_rsa_pub = "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwypP8Pm6Utbs12CiZFGQJEsaJahJ4GAxkcjZoeDTWR7JRoaswXVg6J+re6t0cJUkcAIozRDTNxoplLkb+uazWZve+qdRDQrP+hOOFoFwkGrej3XV1nLDCcjmXDbeWE1wa8h9bGhXyAO6+WSSSsMmd/8tfl71inqZsFtJtTxse9TMtJ3UBnGTw28/HOjez6lAtOJvmFeVJ3ExCWE8gnDbDWe1lJe5ytVCMp1C11vrkMD3vgpwG3EYAZE1ibPUEWtwjSg/ZjXBzdcj3u2PTw+kXfsVKUube3xsXyFKnUk7PhSODasJB0AVl3f5teYbW2L7TREqtbbQmsHvo30+q6wSdQ== auguste@munsee";
-}

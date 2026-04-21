@@ -9,7 +9,11 @@ in
     jq
     nushell
     tmux
+    nxc # from Kapack
   ];
+
+  # not really useful service from Kapack
+  services.my-startup.enable = true;
 
   virtualisation = {
     docker = {

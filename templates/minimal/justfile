@@ -1,0 +1,37 @@
+alias rb := remote-build
+alias rm := rm-g5k-image
+alias g := get-g5k-image
+alias k := kadeploy
+alias fmt := format
+
+default:
+    @just --list
+
+# Build g5k-image on nix-datamove
+remote-build JSON_FILE="result.json":
+    nix --extra-experimental-features mounted-ssh-store --store mounted-ssh-ng://doozer@nix-datamove build .#g5k-image --no-link --json > {{ JSON_FILE }}
+
+# Remove g5k-image directory
+rm-g5k-image:
+    #!/usr/bin/env bash
+    chmod -R 755 g5k-image
+    rm -rf g5k-image
+
+# Retrieve g5k-image files from remote builder
+get-g5k-image:
+    #!/usr/bin/env bash
+    nix_store_g5k_image=$(jq -r .[0].outputs.out result.json)
+    if [ -d  ]; then
+        echo "remove previous g5k-image"
+        just rm-g5k-image
+    fi
+        scp -r doozer@nix-datamove:$nix_store_g5k_image g5k-image
+
+# Launch Kadeploy command
+kadeploy:
+    kadeploy3 -a g5k-image/nixos-x86_64-linux.yaml
+
+# Format files: nix, README.md, justfile
+[group('chore')]
+format:
+    nix fmt
