@@ -37,15 +37,10 @@ in
 
     services.openssh.settings.PermitRootLogin = lib.mkDefault "yes";
     services.getty.autologinUser = lib.mkDefault "root";
-
-    boot.initrd.systemd.emergencyAccess = true;
-    boot.initrd.systemd.managerEnvironment = {
-      SYSTEMD_LOG_LEVEL = "debug";
-      LOG_LEVEL = "7"; # for nixos-ini
-    };
-
-    #system.nixos-init.enable = false;
-
+      
+    # For debugging if a systmed's unit failed
+    #boot.initrd.systemd.emergencyAccess = true;
+      
     # Disable systemd for stage 1
     #boot.initrd.systemd.enable = false;
 
@@ -63,9 +58,20 @@ in
 
     fileSystems."/" = {
       device = "/dev/root";
-      autoResize = true;
       fsType = "ext4";
+
     };
+
+   # boot.initrd.systemd.services.remount-sysroot-rw = {
+  #   description = "Remount /sysroot en rw";
+  #   wantedBy = [ "initrd.target" ];
+  #   after = [ "initrd-root-fs.target" ];
+  #   serviceConfig = {
+  #     Type = "oneshot";
+  #     ExecStart = "${pkgs.util-linux}/bin/mount -o remount,rw /sysroot";
+  #   };
+  # }; 
+
 
     swapDevices = [ ];
     system.stateVersion = lib.mkDefault lib.trivial.release;
@@ -86,15 +92,15 @@ in
       contents = [
         {
           source = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
-          target = "/boot0/" + config.system.boot.loader.initrdFile;
+          target = "/boot/" + config.system.boot.loader.initrdFile;
         }
         {
           source = config.boot.kernelPackages.kernel + "/" + config.system.boot.loader.kernelFile;
-          target = "/boot0/" + config.system.boot.loader.kernelFile;
+          target = "/boot/" + config.system.boot.loader.kernelFile;
         }
         {
           source = "${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init";
-          target = "/boot0/init";
+          target = "/boot/init";
         }
       ];
 
@@ -123,6 +129,8 @@ in
       '';
     };
 
+
+    # TODO: to check
     boot.postBootCommands = ''
       # After booting, register the contents of the Nix store on the
       # CD in the Nix database in the tmpfs.
@@ -136,7 +144,13 @@ in
       touch /etc/NIXOS
       ${config.nix.package.out}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
     '';
-
+    
+    # To work with initrd.systemd:
+    # - 1) add rw to  kernel command line
+    #   Extract from /nixos/modules/system/boot/systemd/initrd.nix:
+    #  `systemd` mounts root in initrd as read-only unless "rw" is on the kernel command line.
+    # - 2) Second: init= must point to NixOS init (in store) 
+    # 
     system.build.kadeploy_env_description = pkgs.writeTextFile {
       name = "${image_name}.yaml";
       text = ''
@@ -157,9 +171,9 @@ in
           compression: gzip
           script:  ${postinstall_args}
         boot:
-          kernel: /boot0/bzImage
-          initrd: /boot0/initrd
-          kernel_params: init=${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init console=tty0 console=ttyS0,115200
+          kernel: /boot/bzImage
+          initrd: /boot/initrd
+          kernel_params: init=${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init rw console=tty0 console=ttyS0,115200
         filesystem: ext4
         partition_type: 131
         multipart: false
