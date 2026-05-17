@@ -124,5 +124,7 @@ just kareboot # or just k
 
 # ssh to node 
 ssh ssh $(head -n 1 $OAR_NODEFILE)
+
 # Becareful check you $PATH it's mixed with /home/$USER/.bashrc 
-echo
+echo $PATH
+```
