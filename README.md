@@ -35,6 +35,7 @@ git add *
 - *user*: after minimal adjusments, user's Grid'5000 account is added with $HOME access 
 - *kapack*: example with kapack packages and modules added with an overlay
 - *nfs-store*: diskless image (nix store get from nfs server ) with user support (use kareboot3 for deployment)
+
 ## By using nix-datamove machine as remote builder (⚠️Experimental⚠️)
 
 ### Requirements
@@ -60,7 +61,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -
 
 ### Build image to deploy with Kadeploy
 
-````bash
+```bash
 # reserve one node
 oarsub -I
 # mount /nix/store of nix-datamove machine
@@ -73,8 +74,10 @@ just generate-user-nix # or just u
 just build # or just b
 # get generated files from nix-datamove
 just get-g5k-image-all # or just g
+```
 
 ### Deploy Kadeploy image on nodes
+
 ```bash
 # On frontend
 cd nixos-g5k-image
@@ -85,10 +88,13 @@ just kadeploy # or just k
 ssh ssh $(head -n 1 $OAR_NODEFILE)
 # Becareful check you $PATH it's mixed with /home/$USER/.bashrc 
 echo $PATH
-````
+```
 
-### Build diskless image (nfs-store) to deploy with Kareboot
-````bash
+
+### Build and deploy diskless image (nfs-store) to deploy with Kareboot
+
+#### Build
+```bash
 # reserve one node
 oarsub -I
 # mount /nix/store of nix-datamove machine
@@ -102,8 +108,10 @@ just remote-build # or just rb
 
 # get generated kernel/initrd from nix-datamove
 just get-g5k-nfs-store # or just g
+```
 
-### Deploy Kadeploy image on nodes
+#### Deploy
+
 ```bash
 # On frontend
 cd nfs-store
