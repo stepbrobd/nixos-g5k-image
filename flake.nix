@@ -6,10 +6,11 @@
     kapack.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =
-    { self
-    , nixpkgs
-    , kapack
-    , ...
+    {
+      self,
+      nixpkgs,
+      kapack,
+      ...
     }:
     let
       system = "x86_64-linux";
@@ -22,6 +23,8 @@
     {
       nixosModules = {
         g5k-image = import ./modules/g5k-image.nix;
+        g5k-image-systemd = import ./modules/g5k-image-systemd.nix;
+        g5k-nfs-store = import ./modules/g5k-nfs-store.nix;
       };
 
       templates = {
@@ -36,6 +39,10 @@
         kapack = {
           description = "Nixos Grid'5000 image, based on user version with addition of kapack's pkgs and modules";
           path = ./templates/kapack;
+        };
+        nfs-store = {
+          description = "Nixos Grid'5000 diskless image (nix store get from nfs server ) with user support and helper (ssh, nfs home)";
+          path = ./templates/nfs-store;
         };
         defaultTemplate = self.templates.user;
       };
