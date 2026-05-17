@@ -27,7 +27,7 @@
         inherit system;
 
         modules = [
-          nixos-g5k-image.nixosModules.g5k-nfs-store.nix
+          nixos-g5k-image.nixosModules.g5k-nfs-store
           ./configuration.nix
         ];
       };
