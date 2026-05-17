@@ -49,6 +49,13 @@
           mkdir -p /mnt-root/nix/.rw-store/store
           mkdir -p /mnt-root/nix/store
 
+          # If not use busybox's mount
+          if [ ! -L "/bin/mount" ]; then
+              echo "WARNING: replace mount command by link to busybox"
+              rm /bin/mount
+              ln -s /bin/busybox /bin/mount
+          fi
+
           echo "Mount NFS store: $nfs_store"
           mount -t nfs -o vers=3,nolock,ro,soft,retry=10 $nfs_store /mnt-root/nix/.server-ro-store
           mount -t overlay overlay -o lowerdir=/mnt-root/nix/.server-ro-store,upperdir=/mnt-root/nix/.rw-store/store,workdir=/mnt-root/nix/.rw-store/work /mnt-root/nix/store

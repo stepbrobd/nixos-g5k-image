@@ -2,7 +2,7 @@
   description = "Default NixOS image for Grid'5000 Testbed";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-g5k-image = {
       url = "github:oar-team/nixos-g5k-image";
       inputs.nixpkgs.follows = "nixpkgs";
