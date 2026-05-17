@@ -13,7 +13,7 @@ Two approaches are possible to use template:
 ```console
 # Get template on external machine 
 mkdir project && cd project
-nix flake init --template "github.com:oar-team/nixos-g5k-image#user"
+nix flake init --template "github:oar-team/nixos-g5k-image#user"
 cd ..
 # Copy to testbed, command may differ following your ssh config
 scp -a project grenoble.g5k:
@@ -25,7 +25,7 @@ scp -a project grenoble.g5k:
 # On Grid'5000
 git clone git@github.com:oar-team/nixos-g5k-image.git
 mkdir project && cd project
-cp -a ../nixos-g5k-image/user"
+cp -a ../nixos-g5k-image/templates/user"
 git init .
 git add *
 ```
@@ -34,7 +34,7 @@ git add *
 - *minimal*: only root user, kadeploy will user's internal SSH public key  
 - *user*: after minimal adjusments, user's Grid'5000 account is added with $HOME access 
 - *kapack*: example with kapack packages and modules added with an overlay
-
+- *nfs-store*: diskless image (nix store get from nfs server ) with user support (use kareboot3 for deployment)
 ## By using nix-datamove machine as remote builder (⚠️Experimental⚠️)
 
 ### Requirements
@@ -86,3 +86,35 @@ ssh ssh $(head -n 1 $OAR_NODEFILE)
 # Becareful check you $PATH it's mixed with /home/$USER/.bashrc 
 echo $PATH
 ````
+
+### Build diskless image (nfs-store) to deploy with Kareboot
+````bash
+# reserve one node
+oarsub -I
+# mount /nix/store of nix-datamove machine
+setup-remote-nix.sh
+# go to directory
+cd nfs-store
+# update user.nix with user info (only for user and kapack templates)
+just generate-user-nix # or just u
+# build image
+just remote-build # or just rb
+
+# get generated kernel/initrd from nix-datamove
+just get-g5k-nfs-store # or just g
+
+### Deploy Kadeploy image on nodes
+```bash
+# On frontend
+cd nfs-store
+
+# Reserve one node, type destructive needed w/ the particular use of kadeploy 
+oarsub -t deploy -t destructive -l nodes=1 -I # or just o
+
+# deploy 
+just kareboot # or just k
+
+# ssh to node 
+ssh ssh $(head -n 1 $OAR_NODEFILE)
+# Becareful check you $PATH it's mixed with /home/$USER/.bashrc 
+echo

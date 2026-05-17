@@ -22,7 +22,7 @@
     in
     {
       nixosModules = {
-        g5k-image = import ./modules/g5k-image.nix;
+        g5k-image = ./modules/g5k-image.nix;
         g5k-image-systemd = import ./modules/g5k-image-systemd.nix;
         g5k-nfs-store = import ./modules/g5k-nfs-store.nix;
       };
