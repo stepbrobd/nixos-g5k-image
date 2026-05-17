@@ -1,0 +1,17 @@
+---
+Simple:
+  reboot:
+    pre-ops:
+      - action: send
+        file: ./kernel
+        destination: $KADEPLOY_TMP_DIR
+        name: send_g5k-nfs-store_kernel
+      - action: send
+        file: ./initrd
+        destination: $KADEPLOY_TMP_DIR
+        name: end_g5k-nfs-store_initrd
+    substitute:
+      - action: exec
+        name: kexec
+        # nohup to be sure the script exit correctly before the kexec start
+        command: kexec --command-line="init=PLACEHOLDER_TO_CHANGE console=tty0 console=ttyS0,115200 nfs_store=172.16.29.101:/nix/store " -l $KADEPLOY_TMP_DIR/kernel --initrd=$KADEPLOY_TMP_DIR/initrd && nohup sh -c 'sleep 1; systemctl kexec' 1>/dev/null 2>/dev/null </dev/null &
