@@ -10,10 +10,11 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , nixos-g5k-image
-    , ...
+    {
+      self,
+      nixpkgs,
+      nixos-g5k-image,
+      ...
     }:
     let
       system = "x86_64-linux";
@@ -27,7 +28,7 @@
 
         modules = [
           nixos-g5k-image.nixosModules.g5k-image
-          (import ./configuration.nix)
+          ./configuration.nix
         ];
       };
     in
