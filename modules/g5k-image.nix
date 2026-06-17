@@ -7,6 +7,8 @@
 let
   image_name = "nixos-${pkgs.stdenv.hostPlatform.system}";
 
+  arch = pkgs.stdenv.hostPlatform.uname.processor;
+
   author = "";
 
   file_image_baseurl = "g5k-image";
@@ -50,7 +52,7 @@ in
       "megaraid_sas"
       "sd_mod"
     ];
-    boot.kernelModules = [ "kvm-intel" ];
+    boot.kernelModules = lib.optionals pkgs.stdenv.hostPlatform.isx86 [ "kvm-intel" "kvm-amd" ];
 
     fileSystems."/" = {
       device = "/dev/root";
@@ -138,7 +140,7 @@ in
         visibility: shared
         destructive: false
         os: linux
-        arch: x86_64
+        arch: ${arch}
         image:
           file: ${file_image_baseurl}/${image_name}.tar.xz
           kind: tar
@@ -148,8 +150,8 @@ in
           compression: gzip
           script:  ${postinstall_args}
         boot:
-          kernel: /boot/bzImage
-          initrd: /boot/initrd
+          kernel: /boot/${config.system.boot.loader.kernelFile}
+          initrd: /boot/${config.system.boot.loader.initrdFile}
           kernel_params: init=boot/init console=tty0 console=ttyS0,115200
         filesystem: ext4
         partition_type: 131
