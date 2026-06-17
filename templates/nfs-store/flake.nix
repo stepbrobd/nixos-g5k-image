@@ -10,11 +10,10 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      nixos-g5k-image,
-      ...
+    { self
+    , nixpkgs
+    , nixos-g5k-image
+    , ...
     }:
     let
       system = "x86_64-linux";
