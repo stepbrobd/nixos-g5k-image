@@ -1,9 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  modulesPath,
-  ...
+{ config
+, lib
+, pkgs
+, modulesPath
+, ...
 }:
 let
   image_name = "nixos-${pkgs.stdenv.hostPlatform.system}";
@@ -39,10 +38,10 @@ in
 
     services.openssh.settings.PermitRootLogin = lib.mkDefault "yes";
     services.getty.autologinUser = lib.mkDefault "root";
-      
+
     # For debugging if a systmed's unit failed
     #boot.initrd.systemd.emergencyAccess = true;
-      
+
     # Disable systemd for stage 1
     #boot.initrd.systemd.enable = false;
 
@@ -64,15 +63,15 @@ in
 
     };
 
-   # boot.initrd.systemd.services.remount-sysroot-rw = {
-  #   description = "Remount /sysroot en rw";
-  #   wantedBy = [ "initrd.target" ];
-  #   after = [ "initrd-root-fs.target" ];
-  #   serviceConfig = {
-  #     Type = "oneshot";
-  #     ExecStart = "${pkgs.util-linux}/bin/mount -o remount,rw /sysroot";
-  #   };
-  # }; 
+    # boot.initrd.systemd.services.remount-sysroot-rw = {
+    #   description = "Remount /sysroot en rw";
+    #   wantedBy = [ "initrd.target" ];
+    #   after = [ "initrd-root-fs.target" ];
+    #   serviceConfig = {
+    #     Type = "oneshot";
+    #     ExecStart = "${pkgs.util-linux}/bin/mount -o remount,rw /sysroot";
+    #   };
+    # }; 
 
 
     swapDevices = [ ];
@@ -146,7 +145,7 @@ in
       touch /etc/NIXOS
       ${config.nix.package.out}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
     '';
-    
+
     # To work with initrd.systemd:
     # - 1) add rw to  kernel command line
     #   Extract from /nixos/modules/system/boot/systemd/initrd.nix:
