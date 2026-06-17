@@ -89,7 +89,7 @@
       "mlx5_core"
     ];
 
-    boot.kernelModules = [ "kvm-intel" ];
+    boot.kernelModules = lib.optionals pkgs.stdenv.hostPlatform.isx86 [ "kvm-intel" "kvm-amd" ];
 
     # Kadeploy tests some ports' accessibility to follow deployment steps
     networking.firewall.enable = false;
