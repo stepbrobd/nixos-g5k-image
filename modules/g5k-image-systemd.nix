@@ -56,7 +56,7 @@ in
     boot.kernelModules = lib.optionals pkgs.stdenv.hostPlatform.isx86 [ "kvm-intel" "kvm-amd" ];
 
     fileSystems."/" = {
-      device = "/dev/root";
+      device = "/dev/disk/by-partlabel/KDPL_DEPLOY_disk0";
       fsType = "ext4";
 
     };
