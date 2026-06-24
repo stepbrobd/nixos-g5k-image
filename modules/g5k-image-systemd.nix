@@ -13,10 +13,8 @@ let
 
   file_image_baseurl = "g5k-image";
 
-  postinstall = "http://public.grenoble.grid5000.fr/~orichard/postinstalls/g5k-postinstall";
-  #"server:///grid5000/postinstalls/g5k-postinstall.tgz";
-
-  postinstall_args = "g5k-postinstall --net none --bootloader no-grub-from-deployed-env";
+  postinstall = "server:///grid5000/postinstalls/g5k-postinstall.tgz";
+  postinstall_args = "g5k-postinstall --net none,predictable_kernel_name --bootloader no-grub-from-deployed-env";
 
 in
 {
